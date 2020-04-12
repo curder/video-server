@@ -1,6 +1,9 @@
 package dbops
 
-import "log"
+import (
+    "database/sql"
+    "log"
+)
 
 // 添加用户
 func AddUserCredential(loginName string, password string) error {
@@ -8,23 +11,28 @@ func AddUserCredential(loginName string, password string) error {
     if err != nil {
         return err
     }
+    defer stmtIns.Close()
 
     stmtIns.Exec(loginName, password)
-    defer stmtIns.Close()
+
     return nil
 }
 
 // 获取用户
 func GetUserCredential(loginName string) (string, error) {
-    stmtOut, err := dbConn.Prepare("SELECT * FROM `users` WHERE `login_name` = ?")
+    stmtOut, err := dbConn.Prepare("SELECT `pwd` FROM `users` WHERE `login_name` = ?")
     if err != nil {
         log.Panicf("%s", err)
         return "", err
     }
 
-    var pwd string
-    stmtOut.QueryRow(loginName).Scan(&pwd)
     defer stmtOut.Close()
+
+    var pwd string
+    err = stmtOut.QueryRow(loginName).Scan(&pwd)
+    if err != nil && err != sql.ErrNoRows {
+        return "", err
+    }
 
     return pwd, nil
 }
@@ -35,12 +43,12 @@ func DeleteUser(loginName string, pwd string) error {
         log.Printf("DeleteUser error: %s", err)
         return err
     }
+    defer stmtDel.Close()
 
     _, err = stmtDel.Exec(loginName, pwd)
     if err != nil {
         return err
     }
 
-    defer stmtDel.Close()
     return nil
 }
