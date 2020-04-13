@@ -2,6 +2,8 @@ package dbops
 
 import "testing"
 
+var tempVideoId string
+
 func TestMain(m *testing.M) {
     clearTables()
     m.Run() // 跑所有的test
@@ -60,5 +62,42 @@ func testReGetUser(t *testing.T) {
 
     if pwd != "" {
         t.Errorf("Deleting user test failed")
+    }
+}
+
+func TestVideoWorkFlow(t *testing.T) {
+    t.Run("PrepareUser", testAddUser)
+    t.Run("Add", testAddVideoInfo)
+    t.Run("Get", testGetVideoInfo)
+    t.Run("Delete", testDeleteVideoInfo)
+    t.Run("ReGet", testReGetVideoInfo)
+}
+
+func testAddVideoInfo(t *testing.T) {
+    vi, err := AddNewVideo(1, "my-video")
+    if err != nil {
+        t.Errorf("Error of AddVideoInfo: %v", err)
+    }
+    tempVideoId = vi.Id
+}
+
+func testGetVideoInfo(t *testing.T) {
+    _, err := GetVideoInfo(tempVideoId)
+    if err != nil {
+        t.Errorf("Error of GetVideoInfo: %v", err)
+    }
+}
+
+func testDeleteVideoInfo(t *testing.T) {
+    err := DeleteVideoInfo(tempVideoId)
+    if err != nil {
+        t.Errorf("Error of DeleteVideoInfo: %v", err)
+    }
+}
+
+func testReGetVideoInfo(t *testing.T) {
+    vi, err := GetVideoInfo(tempVideoId)
+    if err != nil || vi != nil {
+        t.Errorf("Error of RegetVideoInfo: %v", err)
     }
 }
