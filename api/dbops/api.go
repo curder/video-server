@@ -126,3 +126,51 @@ func DeleteVideoInfo(vid string) error {
     defer stmtDel.Close()
     return nil
 }
+
+// 添加评论
+func AddNewComment(videoId string, authorId int, content string) error {
+    id, err := utils.NewUUID()
+    if err != nil {
+        return err
+    }
+    stmtIns, err := dbConn.Prepare("INSERT INTO `comments` (`id`, `video_id`, `author_id`, `content`) VALUES (?, ?, ?, ?)")
+    if err != nil {
+        return err
+    }
+
+    _, err = stmtIns.Exec(id, videoId, authorId, content)
+    if err != nil {
+        return err
+    }
+
+    defer stmtIns.Close()
+    return nil
+}
+
+func ListComments(videoId string, from, to int) ([]*defs.Comment, error) {
+    stmtOut, err := dbConn.Prepare(`SELECT comments.id, users.login_name, comments.content FROM comments
+		INNER JOIN users ON comments.author_id = users.id
+		WHERE comments.video_id = ? AND comments.time > FROM_UNIXTIME(?) AND comments.time <= FROM_UNIXTIME(?)
+		ORDER BY comments.time DESC`)
+
+    var res []*defs.Comment
+
+    rows, err := stmtOut.Query(videoId, from, to)
+    if err != nil {
+        return res, err
+    }
+
+    for rows.Next() {
+        var id, name, content string
+        if err := rows.Scan(&id, &name, &content); err != nil {
+            return res, err
+        }
+
+        c := &defs.Comment{Id: id, VideoId: videoId, AuthorId: name, Content: content}
+        res = append(res, c)
+    }
+
+    defer stmtOut.Close()
+
+    return res, nil
+}

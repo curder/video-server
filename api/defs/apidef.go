@@ -13,3 +13,11 @@ type VideoInfo struct {
     Name string `json:"name"`
     DisplayCtime string `json:"display_ctime"`
 }
+
+// 评论结构体
+type Comment struct {
+    Id string `json:"id"`
+    VideoId string `json:"video_id"`
+    AuthorId string `json:"author_id"`
+    Content string `json:"content"`
+}
