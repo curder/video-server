@@ -87,7 +87,7 @@ func AddNewVideo(authorId int, name string) (videoInfo *defs.VideoInfo, error er
     return res, nil
 }
 
-//
+// 获取视频信息
 func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
     // create uuid
     stmtOut, err := dbConn.Prepare("SELECT  author_id, name, display_ctime FROM video_info WHERE id=?")
@@ -112,6 +112,7 @@ func GetVideoInfo(vid string) (*defs.VideoInfo, error) {
     return res, nil
 }
 
+// 删除视频信息
 func DeleteVideoInfo(vid string) error {
     stmtDel, err := dbConn.Prepare("DELETE FROM video_info WHERE id = ?")
     if err != nil {
